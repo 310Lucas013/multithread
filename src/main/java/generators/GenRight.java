@@ -14,7 +14,7 @@ public class GenRight extends Task<ArrayList<Edge>> implements Callable<ArrayLis
     private KochManager kochManager;
     private KochFractal koch;
 
-    public GenRight(KochManager kochManager, int nxt /*, KochFractal koch*/) {
+    public GenRight(KochManager kochManager, int nxt) {
         this.kochManager = kochManager;
         this.koch = new KochFractal();
         this.edges = new ArrayList<Edge>();
@@ -26,9 +26,6 @@ public class GenRight extends Task<ArrayList<Edge>> implements Callable<ArrayLis
         koch.addObserver(this);
         this.kochManager.setNumberEdges(this.koch.setLevel(nxt));
         koch.generateRightEdge();
-        //edges = koch.generateRightEdge();
-        //this.kochManager.done(edges);
-        //this.kochManager.checkDone();
         this.kochManager.done(edges);
         return edges;
     }
@@ -38,6 +35,5 @@ public class GenRight extends Task<ArrayList<Edge>> implements Callable<ArrayLis
         edges.add(e);
         updateProgress(edges.size(), this.kochManager.getNumberEdges()/3);
         updateMessage(String.valueOf(edges.size()));
-        //this.kochManager.updateRight(this.edges.size());
     }
 }

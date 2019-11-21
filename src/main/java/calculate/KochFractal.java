@@ -9,7 +9,6 @@ import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observer;
 
 /**
  *
@@ -25,10 +24,9 @@ public class KochFractal {
     private ArrayList<Edge> edges = new ArrayList<Edge>();
     private List<Generator> generators = new ArrayList<>();
     private Edge edge;
-//    private KochManager manager;
 
-    public KochFractal(/*KochManager manager*/) {
-        /*this.manager = manager;*/
+
+    public KochFractal() {
     }
 
     private void drawKochEdge(double ax, double ay, double bx, double by, int n) {
@@ -38,7 +36,6 @@ public class KochFractal {
                 Edge e = new Edge(ax, ay, bx, by, Color.hsb(hue*360.0, 1.0, 1.0));
                 edges.add(e);
                 setEdge(e);
-                /*manager.addEdge(e);*/
             } else {
                 double angle = Math.PI / 3.0 + Math.atan2(by - ay, bx - ax);
                 double distabdiv3 = Math.sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay)) / 3;
@@ -51,33 +48,26 @@ public class KochFractal {
                 drawKochEdge(cx, cy, (midabx + bx) / 2, (midaby + by) / 2, n - 1);
                 drawKochEdge((midabx + bx) / 2, (midaby + by) / 2, bx, by, n - 1);
             }
-//            return edges;
         }
-//        return new ArrayList<Edge>();
     }
 
     public void generateLeftEdge() {
         hue = 0f;
         cancelled = false;
-//        synchronized (this.edges) {
            drawKochEdge(0.5, 0.0, (1 - Math.sqrt(3.0) / 2.0) / 2, 0.75, level);
-//        }
     }
 
     public void generateBottomEdge() {
         hue = 1f / 3f;
         cancelled = false;
-//        synchronized (this.edges) {
             drawKochEdge((1 - Math.sqrt(3.0) / 2.0) / 2, 0.75, (1 + Math.sqrt(3.0) / 2.0) / 2, 0.75, level);
-//        }
     }
 
     public void generateRightEdge() {
         hue = 2f / 3f;
         cancelled = false;
-//        synchronized (this.edges) {
             drawKochEdge((1 + Math.sqrt(3.0) / 2.0) / 2, 0.75, 0.5, 0.0, level);
-//        }
+
     }
     
     public void cancel() {

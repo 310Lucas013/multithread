@@ -122,7 +122,6 @@ public class FUN3KochFractalFX extends Application {
         labelProgressLeft = new Label("Progress left: ");
         labelProgressLeftEdges = new Label("Nr edges: ");
         labelProgressLeftEdgesText = new Label();
-//        labelProgressLeftEdgesText.textProperty().bind(this.kochManager.edgesLeftTextProperty().asString());
         pbLeft = new ProgressBar();
         pbLeft.setProgress(0f);
         grid.add(labelProgressLeft, 0, 7, 4, 1);
@@ -135,7 +134,6 @@ public class FUN3KochFractalFX extends Application {
         labelProgressRight = new Label("Progress right: ");
         labelProgressRightEdges = new Label("Nr edges: ");
         labelProgressRightEdgesText = new Label();
-//        labelProgressRightEdgesText.textProperty().bind(this.kochManager.edgesRightTextProperty().asString());
         pbRight = new ProgressBar();
         pbRight.setProgress(0f);
         grid.add(labelProgressRight, 0, 8, 4, 1);
@@ -147,7 +145,6 @@ public class FUN3KochFractalFX extends Application {
         labelProgressBottom = new Label("Progress bottom: ");
         labelProgressBottomEdges = new Label("Nr edges: ");
         labelProgressBottomEdgesText = new Label();
-//        labelProgressBottomEdgesText.textProperty().bind(this.kochManager.edgesBottomTextProperty().asString());
         pbBottom = new ProgressBar();
         pbBottom.setProgress(0f);
         grid.add(labelProgressBottom, 0, 9, 4, 1);
