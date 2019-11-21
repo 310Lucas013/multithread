@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.*;
 import javafx.scene.input.*;
 import javafx.scene.layout.GridPane;
@@ -18,12 +19,11 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 /**
- *
  * @author Nico Kuijpers
  * Modified for FUN3 by Gertjan Schouten
  */
 public class FUN3KochFractalFX extends Application {
-    
+
     // Zoom and drag
     private double zoomTranslateX = 0.0;
     private double zoomTranslateY = 0.0;
@@ -36,10 +36,10 @@ public class FUN3KochFractalFX extends Application {
     // Koch manager
     // TO DO: Create class KochManager in package calculate
     private KochManager kochManager;
-    
+
     // Current level of Koch fractal
     private int currentLevel = 1;
-    
+
     // Labels for level, nr edges, calculation time, and drawing time
     private Label labelLevel;
     private Label labelNrEdges;
@@ -48,7 +48,7 @@ public class FUN3KochFractalFX extends Application {
     private Label labelCalcText;
     private Label labelDraw;
     private Label labelDrawText;
-    
+
     // Koch panel and its size
     private Canvas kochPanel;
     private final int kpWidth = 500;
@@ -59,46 +59,102 @@ public class FUN3KochFractalFX extends Application {
     private static final int THRESHOLD = 200_000;
     private final WritableImage image = new WritableImage(kpWidth, kpHeight);
 
+    // progressBar stuff
+    // Left
+    private Label labelProgressLeft;
+    private Label labelProgressLeftEdges;
+    private Label labelProgressLeftEdgesText;
+    private ProgressBar pbLeft;
+
+    // Right
+    private Label labelProgressRight;
+    private Label labelProgressRightEdges;
+    private Label labelProgressRightEdgesText;
+    private ProgressBar pbRight;
+
+    //Bottom
+    private Label labelProgressBottom;
+    private Label labelProgressBottomEdges;
+    private Label labelProgressBottomEdgesText;
+    private ProgressBar pbBottom;
+
+
     @Override
     public void start(Stage primaryStage) {
-       
         // Define grid pane
         GridPane grid;
         grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(25, 25, 25, 25));
-        
+
         // For debug purposes
         // Make de grid lines visible
         // grid.setGridLinesVisible(true);
-        
+
         // Drawing panel for Koch fractal
-        kochPanel = new Canvas(kpWidth,kpHeight);
+        kochPanel = new Canvas(kpWidth, kpHeight);
         grid.add(kochPanel, 0, 3, 25, 1);
-        
+
         // Labels to present number of edges for Koch fractal
         labelNrEdges = new Label("Nr edges:");
         labelNrEdgesText = new Label();
         grid.add(labelNrEdges, 0, 0, 4, 1);
         grid.add(labelNrEdgesText, 3, 0, 22, 1);
-        
+
         // Labels to present time of calculation for Koch fractal
         labelCalc = new Label("Calculating:");
         labelCalcText = new Label();
         grid.add(labelCalc, 0, 1, 4, 1);
         grid.add(labelCalcText, 3, 1, 22, 1);
-        
+
         // Labels to present time of drawing for Koch fractal
         labelDraw = new Label("Drawing:");
         labelDrawText = new Label();
         grid.add(labelDraw, 0, 2, 4, 1);
         grid.add(labelDrawText, 3, 2, 22, 1);
-        
+
         // Label to present current level of Koch fractal
         labelLevel = new Label("Level: " + currentLevel);
         grid.add(labelLevel, 0, 6);
-        
+
+        //Progress bar left
+        labelProgressLeft = new Label("Progress left: ");
+        labelProgressLeftEdges = new Label("Nr edges: ");
+        labelProgressLeftEdgesText = new Label();
+//        labelProgressLeftEdgesText.textProperty().bind(this.kochManager.edgesLeftTextProperty().asString());
+        pbLeft = new ProgressBar();
+        pbLeft.setProgress(0f);
+        grid.add(labelProgressLeft, 0, 7, 4, 1);
+        grid.add(labelProgressLeftEdges, 11, 7, 4, 1);
+        grid.add(labelProgressLeftEdgesText, 15, 7, 8, 1);
+        grid.add(pbLeft, 4, 7, 6, 1);
+
+
+        //Progress bar right
+        labelProgressRight = new Label("Progress right: ");
+        labelProgressRightEdges = new Label("Nr edges: ");
+        labelProgressRightEdgesText = new Label();
+//        labelProgressRightEdgesText.textProperty().bind(this.kochManager.edgesRightTextProperty().asString());
+        pbRight = new ProgressBar();
+        pbRight.setProgress(0f);
+        grid.add(labelProgressRight, 0, 8, 4, 1);
+        grid.add(labelProgressRightEdges, 11, 8, 4, 1);
+        grid.add(labelProgressRightEdgesText, 15, 8, 8, 1);
+        grid.add(pbRight, 4, 8, 6, 1);
+
+        //Progress bar bottom
+        labelProgressBottom = new Label("Progress bottom: ");
+        labelProgressBottomEdges = new Label("Nr edges: ");
+        labelProgressBottomEdgesText = new Label();
+//        labelProgressBottomEdgesText.textProperty().bind(this.kochManager.edgesBottomTextProperty().asString());
+        pbBottom = new ProgressBar();
+        pbBottom.setProgress(0f);
+        grid.add(labelProgressBottom, 0, 9, 4, 1);
+        grid.add(labelProgressBottomEdges, 11, 9, 4, 1);
+        grid.add(labelProgressBottomEdgesText, 15, 9, 8, 1);
+        grid.add(pbBottom, 4, 9, 6, 1);
+
         // Button to increase level of Koch fractal
         Button buttonIncreaseLevel = new Button();
         buttonIncreaseLevel.setText("Increase Level");
@@ -120,7 +176,7 @@ public class FUN3KochFractalFX extends Application {
             }
         });
         grid.add(buttonDecreaseLevel, 5, 6);
-        
+
         // Button to fit Koch fractal in Koch panel
         Button buttonFitFractal = new Button();
         buttonFitFractal.setText("Fit Fractal");
@@ -131,25 +187,25 @@ public class FUN3KochFractalFX extends Application {
             }
         });
         grid.add(buttonFitFractal, 14, 6);
-        
+
         // Add mouse clicked event to Koch panel
         kochPanel.addEventHandler(MouseEvent.MOUSE_CLICKED,
-            new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent event) {
-                    kochPanelMouseClicked(event);
-                }
-            });
-        
+                new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        kochPanelMouseClicked(event);
+                    }
+                });
+
         // Add mouse pressed event to Koch panel
         kochPanel.addEventHandler(MouseEvent.MOUSE_PRESSED,
-            new EventHandler<MouseEvent>() {
-                @Override
-                public void handle(MouseEvent event) {
-                    kochPanelMousePressed(event);
-                }
-            });
-        
+                new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        kochPanelMousePressed(event);
+                    }
+                });
+
         // Add mouse dragged event to Koch panel
         kochPanel.setOnMouseDragged(new EventHandler<MouseEvent>() {
             @Override
@@ -157,83 +213,91 @@ public class FUN3KochFractalFX extends Application {
                 kochPanelMouseDragged(event);
             }
         });
-        
+
         // Create Koch manager and set initial level
         resetZoom();
         kochManager = new KochManager(this);
         kochManager.changeLevel(currentLevel);
-        
+
         // Create the scene and add the grid pane
         Group root = new Group();
-        Scene scene = new Scene(root, kpWidth+50, kpHeight+170);
+        Scene scene = new Scene(root, kpWidth + 50, kpHeight + 300);
         root.getChildren().add(grid);
-        
+
         // Define title and assign the scene for main window
         primaryStage.setTitle("Koch Fractal");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-    
+
     public void clearKochPanel() {
         GraphicsContext gc = kochPanel.getGraphicsContext2D();
-        gc.clearRect(0.0,0.0,kpWidth,kpHeight);
+        gc.clearRect(0.0, 0.0, kpWidth, kpHeight);
         gc.setFill(Color.BLACK);
-        gc.fillRect(0.0,0.0,kpWidth,kpHeight);
+        gc.fillRect(0.0, 0.0, kpWidth, kpHeight);
         counter = 0;
     }
-    
+
     public void drawEdge(Edge e) {
         // Graphics
         GraphicsContext gc = kochPanel.getGraphicsContext2D();
-        
+
         // Adjust edge for zoom and drag
         Edge e1 = edgeAfterZoomAndDrag(e);
-        
+
         // Set line color
         gc.setStroke(e1.color);
-        
+
         // Set line width depending on level
         if (currentLevel <= 3) {
             gc.setLineWidth(2.0);
-        }
-        else if (currentLevel <=5 ) {
+        } else if (currentLevel <= 5) {
             gc.setLineWidth(1.5);
-        }
-        else {
+        } else {
             gc.setLineWidth(1.0);
         }
-        
+
         // Draw line
-        gc.strokeLine(e1.X1,e1.Y1,e1.X2,e1.Y2);
+        gc.strokeLine(e1.X1, e1.Y1, e1.X2, e1.Y2);
 
         counter++;
-        if (counter>=THRESHOLD) {
-            kochPanel.snapshot(null,image);
+        if (counter >= THRESHOLD) {
+            kochPanel.snapshot(null, image);
             counter = 0;
         }
     }
-    
+
     public void setTextNrEdges(String text) {
-        labelNrEdgesText.setText(text);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                labelNrEdgesText.setText(text);
+            }
+        });
     }
-    
+
     public void setTextCalc(String text) {
-        labelCalcText.setText(text);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                labelCalcText.setText(text);
+            }
+        });
     }
-    
+
     public void setTextDraw(String text) {
         labelDrawText.setText(text);
     }
-    
+
     public void requestDrawEdges() {
-        Platform.runLater(new Runnable(){
+        Platform.runLater(new Runnable() {
             @Override
             public void run() {
                 kochManager.drawEdges();
             }
         });
     }
-    
+
     private void increaseLevelButtonActionPerformed(ActionEvent event) {
         if (currentLevel < 12) {
             // resetZoom();
@@ -241,8 +305,8 @@ public class FUN3KochFractalFX extends Application {
             labelLevel.setText("Level: " + currentLevel);
             kochManager.changeLevel(currentLevel);
         }
-    } 
-    
+    }
+
     private void decreaseLevelButtonActionPerformed(ActionEvent event) {
         if (currentLevel > 1) {
             // resetZoom();
@@ -250,16 +314,16 @@ public class FUN3KochFractalFX extends Application {
             labelLevel.setText("Level: " + currentLevel);
             kochManager.changeLevel(currentLevel);
         }
-    } 
+    }
 
     private void fitFractalButtonActionPerformed(ActionEvent event) {
         resetZoom();
         kochManager.drawEdges();
     }
-    
+
     private void kochPanelMouseClicked(MouseEvent event) {
-        if (Math.abs(event.getX() - startPressedX) < 1.0 && 
-            Math.abs(event.getY() - startPressedY) < 1.0) {
+        if (Math.abs(event.getX() - startPressedX) < 1.0 &&
+                Math.abs(event.getY() - startPressedY) < 1.0) {
             double originalPointClickedX = (event.getX() - zoomTranslateX) / zoom;
             double originalPointClickedY = (event.getY() - zoomTranslateY) / zoom;
             if (event.getButton() == MouseButton.PRIMARY) {
@@ -271,7 +335,7 @@ public class FUN3KochFractalFX extends Application {
             zoomTranslateY = (int) (event.getY() - originalPointClickedY * zoom);
             kochManager.drawEdges();
         }
-    }                                      
+    }
 
     private void kochPanelMouseDragged(MouseEvent event) {
         zoomTranslateX = zoomTranslateX + event.getX() - lastDragX;
@@ -286,7 +350,7 @@ public class FUN3KochFractalFX extends Application {
         startPressedY = event.getY();
         lastDragX = event.getX();
         lastDragY = event.getY();
-    }                                                                        
+    }
 
     private void resetZoom() {
         int kpSize = Math.min(kpWidth, kpHeight);
@@ -302,6 +366,43 @@ public class FUN3KochFractalFX extends Application {
                 e.X2 * zoom + zoomTranslateX,
                 e.Y2 * zoom + zoomTranslateY,
                 e.color);
+    }
+
+    //ChangeProgress
+//    public void setProgressLeft(double progressLeft) {
+//        pbLeft.setProgress(progressLeft);
+//    }
+//
+//    public void setProgressRight(double progressRight) {
+//        pbRight.setProgress(progressRight);
+//    }
+//
+//    public void setProgressBottom(double progressBottom) {
+//        pbBottom.setProgress(progressBottom);
+//    }
+
+    public ProgressBar getPbLeft() {
+        return pbLeft;
+    }
+
+    public ProgressBar getPbRight() {
+        return pbRight;
+    }
+
+    public ProgressBar getPbBottom() {
+        return pbBottom;
+    }
+
+    public Label getLabelProgressLeftEdgesText() {
+        return labelProgressLeftEdgesText;
+    }
+
+    public Label getLabelProgressRightEdgesText() {
+        return labelProgressRightEdgesText;
+    }
+
+    public Label getLabelProgressBottomEdgesText() {
+        return labelProgressBottomEdgesText;
     }
 
     /**
